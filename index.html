@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="orbit">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pomodoro Cosmos</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <div id="grain" aria-hidden="true"></div>
+
+  <div id="app">
+    <header class="topbar glass">
+      <div class="brand">
+        <span class="brand-mark" id="brand-mark">◍</span>
+        <div class="brand-text">
+          <strong id="brand-title">Pomodoro Cosmos</strong>
+          <small id="brand-tag">Órbita Estelar</small>
+        </div>
+      </div>
+
+      <nav class="theme-switch" id="theme-switch" aria-label="Temas"></nav>
+
+      <div class="top-actions">
+        <div class="mini-stat" title="Sequência de dias">
+          <span class="mini-icon">🔥</span><span id="stat-streak">0</span>
+        </div>
+        <div class="mini-stat" title="Sessões hoje / meta diária">
+          <span class="mini-icon">◉</span><span id="stat-today">0/8</span>
+        </div>
+        <div class="mini-stat" id="stat-sync" title="Onde o progresso está sendo gravado">
+          <span class="mini-icon">⛁</span><span id="stat-sync-label">…</span>
+        </div>
+        <button class="btn ghost icon" id="btn-sound" title="Som (M)">♪</button>
+        <button class="btn ghost icon" id="btn-settings" title="Configurações (,)">⚙</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="col-main">
+        <div class="timer-card glass">
+          <div class="phase-tabs" id="phase-tabs"></div>
+
+          <div class="stage-wrap">
+            <canvas id="stage-canvas"></canvas>
+            <div class="readout">
+              <div class="readout-phase" id="readout-phase">Órbita</div>
+              <div class="readout-time" id="readout-time">25:00</div>
+              <div class="readout-sub" id="readout-sub">ciclo 1 · pausa longa em 4</div>
+            </div>
+          </div>
+
+          <div class="task-row">
+            <span class="task-icon">▸</span>
+            <input id="task-input" type="text" maxlength="90" placeholder="No que você está focando agora?" />
+          </div>
+
+          <div class="controls">
+            <button class="btn primary lg" id="btn-toggle">Iniciar órbita</button>
+            <button class="btn ghost" id="btn-reset" title="Reiniciar (R)">Reiniciar</button>
+            <button class="btn ghost" id="btn-skip" title="Pular (S)">Pular</button>
+          </div>
+
+          <div class="cycle-dots" id="cycle-dots"></div>
+        </div>
+
+        <div class="progress-card glass">
+          <div class="prog-head">
+            <div>
+              <div class="prog-title" id="prog-title">Sistema Solar</div>
+              <div class="prog-sub" id="prog-sub">planetas formados</div>
+            </div>
+            <div class="prog-headline" id="prog-headline">0</div>
+          </div>
+          <div class="bar"><div class="bar-fill" id="prog-bar"></div></div>
+          <div class="bar-label" id="prog-bar-label"></div>
+          <div class="prog-stats" id="prog-stats"></div>
+        </div>
+      </section>
+
+      <aside class="col-side">
+        <section class="notes-card glass">
+          <div class="card-head">
+            <h2 id="notes-title">Diário de bordo</h2>
+            <div class="head-actions">
+              <span class="hint" id="notes-count">0 caracteres</span>
+              <button class="btn ghost xs" id="btn-notes-clear" title="Limpar anotações">limpar</button>
+            </div>
+          </div>
+          <textarea id="notes" placeholder="Anote ideias, bloqueios, próximos passos…&#10;Tudo é salvo automaticamente no seu navegador."></textarea>
+        </section>
+
+        <section class="tabs-card glass">
+          <div class="tabbar" id="tabbar">
+            <button class="tab active" data-tab="log">Registro</button>
+            <button class="tab" data-tab="marks">Marcas</button>
+            <button class="tab" data-tab="collection">Coleção</button>
+            <button class="tab" data-tab="stats">Stats</button>
+          </div>
+          <div class="tab-body">
+            <div class="tab-pane active" id="pane-log">
+              <div class="log-input">
+                <input id="log-input" placeholder="registrar uma nota rápida…" />
+                <button class="btn ghost xs" id="btn-log-add">+</button>
+              </div>
+              <ul class="log-list" id="log-list"></ul>
+            </div>
+            <div class="tab-pane" id="pane-marks"></div>
+            <div class="tab-pane" id="pane-collection"></div>
+            <div class="tab-pane" id="pane-stats"></div>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <dialog id="settings-modal">
+    <form method="dialog" class="modal glass">
+      <header class="modal-head">
+        <h2>Configurações</h2>
+        <button class="btn ghost icon" value="close" id="btn-close-settings">✕</button>
+      </header>
+      <div class="modal-body" id="settings-body"></div>
+      <footer class="modal-foot">
+        <div class="foot-left">
+          <button type="button" class="btn ghost xs" id="btn-export">Exportar dados</button>
+          <button type="button" class="btn ghost xs" id="btn-import">Importar</button>
+          <button type="button" class="btn ghost xs danger" id="btn-wipe">Apagar tudo</button>
+        </div>
+        <button class="btn primary" value="close">Fechar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <input type="file" id="import-file" accept="application/json" hidden />
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

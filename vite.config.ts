@@ -1,0 +1,14 @@
+import { defineConfig } from 'vite';
+import { progressFile } from './server/progress-file';
+
+// dev e preview usam a MESMA porta de propósito: o localStorage é por origem,
+// então portas diferentes seriam dois progressos separados.
+const PORT = 5173;
+
+export default defineConfig({
+  base: './',
+  plugins: [progressFile('data/progress.json')],
+  server: { port: PORT, strictPort: true, open: true },
+  preview: { port: PORT, strictPort: true },
+  build: { outDir: 'dist', target: 'es2022' },
+});
