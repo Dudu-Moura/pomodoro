@@ -21,7 +21,7 @@ export function renderTop(): void {
 
 export function renderProgress(): void {
   const theme = getTheme(store.theme);
-  const v = theme.progression.view(store.themeProgress);
+  const v = theme.progression.view(store.themeProgress, store.activeLevel());
   $('prog-title').textContent = v.title;
   $('prog-sub').textContent = v.sub;
   $('prog-headline').textContent = v.headline;
@@ -67,7 +67,7 @@ export function renderMarks(): void {
 export function renderCollection(): void {
   const theme = getTheme(store.theme);
   const p = store.themeProgress;
-  const v = theme.progression.view(p);
+  const v = theme.progression.view(p, store.activeLevel());
   const tiers = theme.progression.tiers;
 
   const coll = v.collection.map((c) => `
@@ -76,16 +76,26 @@ export function renderCollection(): void {
       <div><div class="coll-name">${c.unlocked ? esc(c.name) : '???'}</div><div class="coll-desc">${c.unlocked ? esc(c.desc) : 'bloqueado'}</div></div>
     </div>`).join('');
 
-  const tierHtml = tiers.map((t) => {
-    const on = p.counter >= t.at;
-    return `<div class="coll ${on ? 'on' : 'locked'}">
+  const active = store.activeLevel();
+  const auto = (p.stagePick ?? 0) === 0;
+  const tierHtml = tiers.map((t, i) => {
+    const level = i + 1;
+    const on = level <= p.level;
+    const isActive = on && level === active;
+    return `<button type="button" class="coll stage ${on ? 'on' : 'locked'} ${isActive ? 'active' : ''}"
+      ${on ? `data-stage="${level}"` : 'disabled'} title="${on ? 'Usar este estágio' : 'Ainda bloqueado'}">
       <div class="coll-icon">${t.icon}</div>
-      <div><div class="coll-name">${esc(t.name)}</div><div class="coll-desc">${on ? esc(t.desc) : `requer ${t.at} ${theme.progression.unit}`}</div></div>
-    </div>`;
+      <div><div class="coll-name">${esc(t.name)}${isActive ? ' <span class="chip">em uso</span>' : ''}</div>
+      <div class="coll-desc">${on ? esc(t.desc) : `requer ${t.at} ${theme.progression.unit}`}</div></div>
+    </button>`;
   }).join('');
 
   $('pane-collection').innerHTML =
-    `<div class="section-title">estágios — ${esc(theme.name)}</div><div class="coll-grid">${tierHtml}</div>
+    `<div class="section-title">estágios — ${esc(theme.name)}
+       <button type="button" class="btn ghost xs stage-auto ${auto ? 'on' : ''}" data-stage="0">${auto ? '✓ ' : ''}automático</button>
+     </div>
+     <div class="hint" style="margin:-4px 0 8px">Clique num estágio desbloqueado para usar o visual dele. No automático, sempre o mais recente.</div>
+     <div class="coll-grid">${tierHtml}</div>
      <div class="section-title" style="margin-top:14px">coleção (${v.collection.filter((c) => c.unlocked).length}/${v.collection.length})</div>
      <div class="coll-grid">${coll}</div>`;
 }

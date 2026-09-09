@@ -72,7 +72,7 @@ export class Renderer {
       running: timer.running,
       intensity: st.settings.effects,
       reduceMotion: st.settings.reduceMotion,
-      level: p.level,
+      level: store.activeLevel(this.themeId),
       counter: p.counter,
       burst: this.burst,
       overload: progress > 0.9 ? (progress - 0.9) / 0.1 : 0,

@@ -12,10 +12,19 @@ export interface Settings {
   tickSound: boolean;
   soundOn: boolean;
   volume: number;             // 0..1
+  /** camada de som ambiente contínua, própria de cada tema */
+  ambience: boolean;
+  ambienceVolume: number;     // 0..1
   effects: number;            // 0..1 intensidade dos efeitos
   reduceMotion: boolean;
   notifications: boolean;
+  /** aviso no celular ao terminar um foco, via serviço de push */
+  notifyPhone: boolean;
+  notifyProvider: 'ntfy' | 'webhook';
+  notifyTarget: string;
   showSeconds: boolean;
+  /** modo zen: esconde os dígitos e deixa só a arte do tema */
+  hideTime: boolean;
   dailyGoal: number;          // sessões de foco por dia
   theme: ThemeId;
 }
@@ -45,6 +54,8 @@ export interface ThemeProgress {
   sessions: number;
   unlocked: string[];         // ids de itens/coleção desbloqueados
   counter: number;            // contador livre por tema (planetas, massa, MW, uptime)
+  /** estágio escolhido manualmente (1..N). 0 = sempre o mais recente desbloqueado */
+  stagePick: number;
 }
 
 export interface AppState {

@@ -1,8 +1,12 @@
 import { store } from '../core/store';
 import { themeList } from '../themes';
 import type { Settings, ThemeId } from '../core/types';
+import { sendPush } from '../core/push';
 
 type Row =
+  | { kind: 'text'; key: keyof Settings; label: string; desc?: string; placeholder?: string }
+  | { kind: 'choice'; key: keyof Settings; label: string; desc?: string; options: { value: string; label: string }[] }
+  | { kind: 'action'; label: string; desc?: string; button: string; run: (feedback: (msg: string, ok: boolean) => void) => void }
   | { kind: 'num'; key: keyof Settings; label: string; desc?: string; min: number; max: number; step?: number; suffix?: string }
   | { kind: 'bool'; key: keyof Settings; label: string; desc?: string }
   | { kind: 'range'; key: keyof Settings; label: string; desc?: string; min: number; max: number; step: number }
@@ -34,12 +38,35 @@ const GROUPS: { title: string; rows: Row[] }[] = [
       { kind: 'bool', key: 'soundOn', label: 'Efeitos sonoros', desc: 'Sons sintetizados, diferentes em cada tema.' },
       { kind: 'range', key: 'volume', label: 'Volume', min: 0, max: 1, step: 0.05 },
       { kind: 'bool', key: 'tickSound', label: 'Tique a cada segundo', desc: 'Pulso discreto enquanto o tempo corre.' },
+      { kind: 'bool', key: 'ambience', label: 'Som ambiente', desc: 'Paisagem sonora contínua de cada tema, que muda entre repouso e sessão em andamento.' },
+      { kind: 'range', key: 'ambienceVolume', label: 'Volume do ambiente', min: 0, max: 1, step: 0.05 },
+    ],
+  },
+  {
+    title: 'Avisar no celular',
+    rows: [
+      { kind: 'bool', key: 'notifyPhone', label: 'Avisar quando um foco terminar', desc: 'Manda um push para o celular ao fim de cada sessão de foco. Exige o app rodando por npm run dev / preview.' },
+      {
+        kind: 'choice', key: 'notifyProvider', label: 'Serviço',
+        desc: 'ntfy é grátis e sem conta: instale o app ntfy, assine um tópico e use o mesmo nome aqui.',
+        options: [{ value: 'ntfy', label: 'ntfy' }, { value: 'webhook', label: 'Webhook (Discord, Slack…)' }],
+      },
+      { kind: 'text', key: 'notifyTarget', label: 'Tópico ou URL', placeholder: 'pomodoro-eduardo-x7k2', desc: 'No ntfy, escolha um nome longo e difícil de adivinhar: quem souber o tópico recebe (e envia) suas mensagens.' },
+      {
+        kind: 'action', label: 'Enviar um teste agora', button: 'testar',
+        desc: 'Dispara um aviso real para o destino configurado.',
+        run: (feedback) => {
+          void sendPush('Pomodoro Cosmos', 'Teste de aviso — se você leu isso no celular, está funcionando.')
+            .then((r) => feedback(r.ok ? `enviado via ${r.host ?? 'destino'}` : `falhou: ${r.error}`, r.ok));
+        },
+      },
     ],
   },
   {
     title: 'Visual',
     rows: [
       { kind: 'theme', label: 'Tema ativo', desc: 'Muda cores, fontes, sons, efeitos e o sistema de progresso.' },
+      { kind: 'bool', key: 'hideTime', label: 'Esconder o relógio (modo zen)', desc: 'Some com os dígitos e deixa só a arte do tema. Atalho: H.' },
       { kind: 'range', key: 'effects', label: 'Intensidade dos efeitos', desc: 'Brilho, partículas e pós-processamento.', min: 0, max: 1, step: 0.05 },
       { kind: 'bool', key: 'reduceMotion', label: 'Reduzir movimento', desc: 'Congela animações de fundo. Melhora desempenho.' },
     ],
@@ -106,6 +133,46 @@ export function buildSettings(onThemeChange: (id: ThemeId) => void, onDurations:
           store.setSettings({ [row.key]: Number(inp.value) } as Partial<Settings>);
         });
         ctl.append(inp, out);
+      } else if (row.kind === 'text') {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'set-text';
+        inp.placeholder = row.placeholder ?? '';
+        inp.value = String(store.state.settings[row.key] ?? '');
+        inp.addEventListener('change', () => {
+          store.setSettings({ [row.key]: inp.value.trim() } as Partial<Settings>);
+        });
+        ctl.append(inp);
+      } else if (row.kind === 'choice') {
+        const sel = document.createElement('select');
+        for (const o of row.options) {
+          const opt = document.createElement('option');
+          opt.value = o.value;
+          opt.textContent = o.label;
+          sel.append(opt);
+        }
+        sel.value = String(store.state.settings[row.key] ?? row.options[0].value);
+        sel.addEventListener('change', () => {
+          store.setSettings({ [row.key]: sel.value } as Partial<Settings>);
+        });
+        ctl.append(sel);
+      } else if (row.kind === 'action') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn ghost xs';
+        btn.textContent = row.button;
+        const out = document.createElement('span');
+        out.className = 'hint';
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          out.textContent = 'enviando…';
+          row.run((msg, ok) => {
+            btn.disabled = false;
+            out.textContent = msg;
+            out.style.color = ok ? 'var(--ok)' : 'var(--danger)';
+          });
+        });
+        ctl.append(btn, out);
       } else {
         const sel = document.createElement('select');
         for (const t of themeList) {

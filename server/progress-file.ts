@@ -25,6 +25,23 @@ const readBody = (req: Connect.IncomingMessage): Promise<string> =>
  */
 export function progressFile(relative = 'data/progress.json'): Plugin {
   let target = '';
+  let seq = 0;
+  // gravações são serializadas: dois POSTs simultâneos (ex.: flush + beacon)
+  // disputariam o mesmo arquivo temporário e um deles falharia
+  let queue: Promise<void> = Promise.resolve();
+
+  const writeAtomic = (data: unknown): Promise<void> => {
+    const run = queue.then(async () => {
+      await mkdir(path.dirname(target), { recursive: true });
+      // nome único por gravação, não só por processo
+      const tmp = `${target}.${process.pid}.${seq++}.tmp`;
+      await writeFile(tmp, JSON.stringify(data, null, 2), 'utf8');
+      await rename(tmp, target);
+    });
+    // a fila continua mesmo se uma gravação falhar
+    queue = run.catch(() => undefined);
+    return run;
+  };
 
   const attach = (server: ViteDevServer | PreviewServer): void => {
     server.middlewares.use(ROUTE, async (req, res) => {
@@ -52,11 +69,8 @@ export function progressFile(relative = 'data/progress.json'): Plugin {
           if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
             throw new Error('corpo não é um objeto de estado');
           }
-          await mkdir(path.dirname(target), { recursive: true });
           // grava em temporário e renomeia: uma queda no meio não corrompe o arquivo bom
-          const tmp = `${target}.${process.pid}.tmp`;
-          await writeFile(tmp, JSON.stringify(parsed, null, 2), 'utf8');
-          await rename(tmp, target);
+          await writeAtomic(parsed);
           res.statusCode = 204;
           res.end();
         } catch (err) {

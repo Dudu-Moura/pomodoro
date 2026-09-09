@@ -1,0 +1,621 @@
+{
+  "savedAt": 1788458813394,
+  "settings": {
+    "focusMin": 25,
+    "shortMin": 5,
+    "longMin": 15,
+    "longEvery": 4,
+    "autoStartBreaks": true,
+    "autoStartFocus": false,
+    "tickSound": false,
+    "soundOn": true,
+    "volume": 0.5,
+    "ambience": true,
+    "ambienceVolume": 0.55,
+    "effects": 0.85,
+    "reduceMotion": false,
+    "notifications": false,
+    "notifyPhone": false,
+    "notifyProvider": "ntfy",
+    "notifyTarget": "",
+    "showSeconds": true,
+    "hideTime": true,
+    "dailyGoal": 8,
+    "theme": "orbit"
+  },
+  "marks": [
+    {
+      "id": "dcbfbcc3-199d-4809-b4fb-4a284480742d",
+      "ts": 1788458703352,
+      "end": 1788458806166,
+      "minutes": 1.6888166666666666,
+      "phase": "short",
+      "theme": "orbit",
+      "task": "",
+      "completed": false
+    },
+    {
+      "id": "6964f9ab-e2c0-4882-a481-942b38e0ec31",
+      "ts": 1788457202423,
+      "end": 1788458702429,
+      "minutes": 25.0001,
+      "phase": "focus",
+      "theme": "orbit",
+      "task": "",
+      "completed": true
+    },
+    {
+      "id": "a9db724b-9a4b-4842-b021-007075aec1c3",
+      "ts": 1788443764609,
+      "end": 1788444064624,
+      "minutes": 5.000233333333333,
+      "phase": "short",
+      "theme": "orbit",
+      "task": "",
+      "completed": true
+    },
+    {
+      "id": "58665188-70b9-4373-b145-fd32af959671",
+      "ts": 1788383680681,
+      "end": 1788383980693,
+      "minutes": 5.0002,
+      "phase": "short",
+      "theme": "orbit",
+      "task": "Verificação de lacunas no AT, verificar Vitest",
+      "completed": true
+    },
+    {
+      "id": "80418b3b-4b0c-4b57-9da1-c53dea91bedc",
+      "ts": 1788382179724,
+      "end": 1788383679748,
+      "minutes": 25.0004,
+      "phase": "focus",
+      "theme": "orbit",
+      "task": "Verificação de lacunas no AT, verificar Vitest",
+      "completed": true
+    },
+    {
+      "id": "49ef6c76-1c0d-437f-a396-3122163878b5",
+      "ts": 1788381180637,
+      "end": 1788381482118,
+      "minutes": 5.000633333333333,
+      "phase": "short",
+      "theme": "orbit",
+      "task": "Verificação de lacunas no AT, verificar Vitest",
+      "completed": true
+    },
+    {
+      "id": "4fc8ad3d-ac7c-4d6a-8f3d-6b95609df88e",
+      "ts": 1788379679704,
+      "end": 1788381179717,
+      "minutes": 25.000216666666667,
+      "phase": "focus",
+      "theme": "orbit",
+      "task": "Verificação de lacunas no AT, verificar Vitest",
+      "completed": true
+    },
+    {
+      "id": "162549a3-b886-4304-9e2c-6225de2a5eac",
+      "ts": 1788369300000,
+      "end": 1788370800000,
+      "minutes": 25,
+      "phase": "focus",
+      "theme": "blackhole",
+      "task": "(sessão reconstruída)",
+      "completed": true
+    },
+    {
+      "id": "510c9cd4-747b-40d6-be1c-7ba0ed018c73",
+      "ts": 1788367200000,
+      "end": 1788368700000,
+      "minutes": 25,
+      "phase": "focus",
+      "theme": "orbit",
+      "task": "(sessão reconstruída)",
+      "completed": true
+    },
+    {
+      "id": "02174c39-ea9e-4d8c-b566-fd7c47c2a785",
+      "ts": 1788365100000,
+      "end": 1788366600000,
+      "minutes": 25,
+      "phase": "focus",
+      "theme": "orbit",
+      "task": "(sessão reconstruída)",
+      "completed": true
+    },
+    {
+      "id": "d125dbf9-37f4-4b47-b2c5-8387ed296de7",
+      "ts": 1788363000000,
+      "end": 1788364500000,
+      "minutes": 25,
+      "phase": "focus",
+      "theme": "orbit",
+      "task": "(sessão reconstruída)",
+      "completed": true
+    }
+  ],
+  "logs": [
+    {
+      "id": "a90f9798-090f-48f2-876c-2a436681631f",
+      "ts": 1788458812693,
+      "kind": "system",
+      "text": "início · Órbita"
+    },
+    {
+      "id": "54f16fad-8f7e-4ad9-8da5-c28e521de1f1",
+      "ts": 1788458804682,
+      "kind": "system",
+      "text": "pausado em 03:19 restantes"
+    },
+    {
+      "id": "7d42f423-43d7-4bb7-8938-1a396ae4b51a",
+      "ts": 1788458703353,
+      "kind": "system",
+      "text": "início · Afélio"
+    },
+    {
+      "id": "4599be03-3056-437f-93b2-7baa6785ad15",
+      "ts": 1788458702442,
+      "kind": "reward",
+      "text": "Órbita completa em 25 min — Gigante Gasoso formado. Sistema: Alpha Centauri."
+    },
+    {
+      "id": "af762e4c-c642-429d-a668-e439c39c8dbe",
+      "ts": 1788457202424,
+      "kind": "system",
+      "text": "início · Órbita"
+    },
+    {
+      "id": "ed0bd004-42d1-4437-a762-5167d6fef327",
+      "ts": 1788457194245,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "377f465c-22f6-4d69-927b-167536d4d697",
+      "ts": 1788457192694,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "97f06197-9210-4e3d-9efc-9afa01305d51",
+      "ts": 1788444064640,
+      "kind": "system",
+      "text": "pausa concluída — a seguir: Órbita"
+    },
+    {
+      "id": "e3495f74-8f76-4b39-a315-b67d6ea48040",
+      "ts": 1788443764612,
+      "kind": "system",
+      "text": "início · Afélio"
+    },
+    {
+      "id": "ded7de21-935c-4a8b-ad40-a0787927494d",
+      "ts": 1788384482636,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "f3f0cf20-2516-4593-ab4d-9e51f2202fd9",
+      "ts": 1788384479590,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "d0cbbcdf-1c9b-413e-a513-7bccb5bc4193",
+      "ts": 1788384477641,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "037684ec-9c0b-4c37-b6c3-796d0bde6c2a",
+      "ts": 1788384474939,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "fcae7562-7ad9-467f-907d-9c0f447ac194",
+      "ts": 1788384412112,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "06123151-8782-48b7-9c2e-333ea8370c4b",
+      "ts": 1788384411189,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "fc591922-58bb-4185-a875-29a186f8bff5",
+      "ts": 1788384408968,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "a79990e6-d837-47a8-86b1-6123464d5764",
+      "ts": 1788384407621,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "d6ea84e4-cedc-4a25-998f-9d30ce00625a",
+      "ts": 1788384405858,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "690adeec-e05e-46ca-aa3b-16a3a0757741",
+      "ts": 1788383980699,
+      "kind": "system",
+      "text": "pausa concluída — a seguir: Órbita"
+    },
+    {
+      "id": "9e7247b7-7abd-4087-98fa-b1c06d93ae51",
+      "ts": 1788383681267,
+      "kind": "reward",
+      "text": "desbloqueado: Gigante Gasoso"
+    },
+    {
+      "id": "a43a9a3c-e541-470b-b15f-e851eefa52e7",
+      "ts": 1788383680682,
+      "kind": "system",
+      "text": "início · Afélio — Verificação de lacunas no AT, verificar Vitest"
+    },
+    {
+      "id": "96ff0b33-10be-46f6-a1fb-7f92c2bc8aa4",
+      "ts": 1788383679766,
+      "kind": "reward",
+      "text": "Órbita completa em 25 min — Gigante Gasoso formado. Sistema: Alpha Centauri."
+    },
+    {
+      "id": "5beb0636-f96f-4d7d-9325-0596581fcb0f",
+      "ts": 1788382179725,
+      "kind": "system",
+      "text": "início · Órbita — Verificação de lacunas no AT, verificar Vitest"
+    },
+    {
+      "id": "d145b0dc-8a2e-4242-85c5-6127dfa65a5d",
+      "ts": 1788381482123,
+      "kind": "system",
+      "text": "pausa concluída — a seguir: Órbita"
+    },
+    {
+      "id": "0eeed808-03e9-49d8-800d-fbc400c811b4",
+      "ts": 1788381195475,
+      "kind": "system",
+      "text": "pausado em 04:46 restantes"
+    },
+    {
+      "id": "4dc955eb-bf5c-440c-86bb-712ee4b9a364",
+      "ts": 1788381180638,
+      "kind": "system",
+      "text": "início · Afélio — Verificação de lacunas no AT, verificar Vitest"
+    },
+    {
+      "id": "8ee65eee-e287-4864-972c-42025d5587e5",
+      "ts": 1788381179728,
+      "kind": "reward",
+      "text": "Órbita completa em 25 min — Mundo Oceânico formado. Sistema: Alpha Centauri."
+    },
+    {
+      "id": "681eda01-cc3b-43bc-9da6-33f659f9d9ea",
+      "ts": 1788379679705,
+      "kind": "system",
+      "text": "início · Órbita — Verificação de lacunas no AT, verificar Vitest"
+    },
+    {
+      "id": "47e3552b-1ae0-475d-872a-91cc0807da1d",
+      "ts": 1788376854655,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "ad3f9445-37cf-4f08-8980-91b15ae1f3ea",
+      "ts": 1788376848330,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "860aa0ff-0717-499c-b06d-9f5e37dec994",
+      "ts": 1788376843019,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "3df96b71-b42a-4e71-bdae-8647c57a40f8",
+      "ts": 1788376823934,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "12779afe-2db2-431d-91fc-2d34daa07d8c",
+      "ts": 1788376818984,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "9cc2a362-a862-42e0-a4eb-47d1919cb7cb",
+      "ts": 1788375241949,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "5cf68a0e-a913-448e-a7d7-10d9bc1ebc20",
+      "ts": 1788375240841,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "f41f92d0-2afe-4c2e-bebe-50ecf3388e33",
+      "ts": 1788375239738,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "08acca74-a17e-4a8a-8a5f-680abf56e111",
+      "ts": 1788375238019,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "6f9fa7b4-461e-48f4-8efa-e31996018f47",
+      "ts": 1788375236477,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "742738cd-88fc-453f-abae-c6d9299014ef",
+      "ts": 1788375235291,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "41c6e7ee-ec24-4164-868b-476b8f46baaf",
+      "ts": 1788375234446,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "d21cf5cc-147b-478d-99ec-a73188b9615f",
+      "ts": 1788375233855,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "ad1bf3f9-9b04-4d0b-b850-c8fc6cfbe47f",
+      "ts": 1788375232929,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "85abfd06-e87d-48fc-b20e-cba333f5ae12",
+      "ts": 1788375231417,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "420b7c7e-01a9-41fe-b173-a78a0aa30426",
+      "ts": 1788375229829,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "df1d11ac-15a2-42b3-94f6-38f8a486419f",
+      "ts": 1788375227131,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "69efbe0e-6a3a-45b1-bdb1-19b083e1d096",
+      "ts": 1788375225703,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "f35b52f8-4810-48f2-8071-e866f330e810",
+      "ts": 1788375223511,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "ab442d44-5a7e-45ba-9ed2-76bca2b38d9a",
+      "ts": 1788375221494,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "7027b07b-b6c1-404a-b4d3-2968b4a84352",
+      "ts": 1788375218781,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "99dcd682-f41e-4cfa-920c-07440882bb36",
+      "ts": 1788375215768,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "f2583cb9-e73a-4486-927d-6514d81bd871",
+      "ts": 1788375212064,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "92c8a03d-bae5-4c7e-b5dc-e659217dcd5c",
+      "ts": 1788375206673,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "bb1dd489-af2f-4550-a405-4c493b9822bd",
+      "ts": 1788375195394,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "d3c6a261-b66d-4ea3-9990-e145cf97da9b",
+      "ts": 1788375190338,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "f88a714a-4fee-41d3-bf0e-34b8bc7f3e64",
+      "ts": 1788375187613,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "6d99a96b-df51-4419-8328-9764a9a6cc28",
+      "ts": 1788375183122,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "b241d85b-5cb2-4783-9362-697d51389163",
+      "ts": 1788375181873,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "5aceb10c-992d-4c2a-9d7f-76f6d567676a",
+      "ts": 1788375178204,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "fcd6f50a-5ec2-4c73-aa7a-175f779e1226",
+      "ts": 1788375075705,
+      "kind": "system",
+      "text": "progresso restaurado: 3 sessoes de Orbita (Alpha Centauri) + 1 de Buraco Negro"
+    },
+    {
+      "id": "eeebc197-4487-4103-8040-5964c8de58c1",
+      "ts": 1788372252860,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "19643717-27cd-4868-ad7c-34727d99ac8f",
+      "ts": 1788372250272,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "6401df3d-a16a-439b-ad9b-7fb15043a4c8",
+      "ts": 1788372248802,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "6a15eecd-8731-4aa5-ba00-5a62d52ee524",
+      "ts": 1788372239486,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "14294be0-96f8-4154-8d6d-bdbb05b3d15f",
+      "ts": 1788372227271,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "9abc7da8-b109-4bae-bf19-96343f8bb3af",
+      "ts": 1788372218502,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "0478112e-e78f-4679-91c4-392bb4017d31",
+      "ts": 1788371510590,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "7c869895-01ce-4389-9bc3-bb45c69f73b1",
+      "ts": 1788371484898,
+      "kind": "system",
+      "text": "tema alterado para Reator Neon"
+    },
+    {
+      "id": "4fbe7c15-dec8-4fbb-bd5f-4f88256bbef2",
+      "ts": 1788371454914,
+      "kind": "system",
+      "text": "tema alterado para TTY / Kernel"
+    },
+    {
+      "id": "f7ca21de-0e2b-4fb6-8f6a-94386476a256",
+      "ts": 1788371429966,
+      "kind": "system",
+      "text": "tema alterado para Horizonte de Eventos"
+    },
+    {
+      "id": "506852c6-9348-4d65-92b5-2ae85a57928a",
+      "ts": 1788371124301,
+      "kind": "system",
+      "text": "tema alterado para Órbita Estelar"
+    },
+    {
+      "id": "141d317f-d5a7-4449-8191-efa517f576bc",
+      "ts": 1788371120146,
+      "kind": "system",
+      "text": "sistema iniciado — escolha um tema e comece uma sessão"
+    }
+  ],
+  "notes": "",
+  "task": "",
+  "progress": {
+    "orbit": {
+      "xp": 1545,
+      "level": 2,
+      "totalMinutes": 165.00178333333332,
+      "sessions": 6,
+      "unlocked": [
+        "rocky",
+        "ocean",
+        "gas"
+      ],
+      "counter": 6,
+      "stagePick": 2
+    },
+    "blackhole": {
+      "xp": 250,
+      "level": 1,
+      "totalMinutes": 25,
+      "sessions": 1,
+      "unlocked": [
+        "ast"
+      ],
+      "counter": 50,
+      "stagePick": 0
+    },
+    "terminal": {
+      "xp": 0,
+      "level": 1,
+      "totalMinutes": 0,
+      "sessions": 0,
+      "unlocked": [],
+      "counter": 0,
+      "stagePick": 0
+    },
+    "reactor": {
+      "xp": 0,
+      "level": 1,
+      "totalMinutes": 0,
+      "sessions": 0,
+      "unlocked": [],
+      "counter": 0,
+      "stagePick": 0
+    }
+  },
+  "streak": {
+    "count": 2,
+    "lastDay": "2026-09-03"
+  },
+  "totals": {
+    "focusMinutes": 175.00071666666665,
+    "sessions": 7,
+    "startedAt": 1788363000000
+  }
+}

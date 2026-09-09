@@ -21,10 +21,24 @@ const CONSUMED = [
   { id: 'bh', name: 'Fusão Binária', icon: '∞', at: 20000, desc: 'Dois horizontes viram um. LIGO agradece.' },
 ];
 
+/** Cada estágio de massa muda a cor do disco, o tamanho e o que aparece em cena. */
+const STAGE_LOOK = [
+  { hot: 390, cold: 280, ring: '255,210,150', accent: '#b07bff', a2: '#ffb877', disk: 1.00, horizon: 1.00 },
+  { hot: 400, cold: 285, ring: '255,196,130', accent: '#c78fff', a2: '#ffa860', disk: 1.18, horizon: 1.16 },
+  { hot: 410, cold: 300, ring: '255,180,110', accent: '#d6a0ff', a2: '#ff9040', disk: 1.38, horizon: 1.34 },
+  { hot: 430, cold: 320, ring: '220,225,255', accent: '#a9c4ff', a2: '#ffd0a0', disk: 1.58, horizon: 1.52 },
+  { hot: 460, cold: 350, ring: '235,250,255', accent: '#7fe8ff', a2: '#ffffff', disk: 1.80, horizon: 1.70 },
+];
+const look = (level: number) => STAGE_LOOK[Math.min(STAGE_LOOK.length, Math.max(1, level)) - 1];
+
 interface P { r: number; a: number; s: number; hue: number; size: number; }
+/** Corpo visível caindo no horizonte, esticado pela maré. */
+interface Debris { r: number; a: number; size: number; hue: number; spin: number; kind: 0 | 1 | 2; }
 
 class BlackHoleScene implements Scene {
   private ps: P[] = [];
+  private debris: Debris[] = [];
+  private eaten: { a: number; life: number }[] = [];
   private stars: { x: number; y: number; s: number }[] = [];
   private collapse = 0;
   private flash = 0;
@@ -39,6 +53,18 @@ class BlackHoleScene implements Scene {
       hue: 250 + rnd() * 60,
       size: 0.7 + rnd() * 1.9,
     }));
+    this.debris = Array.from({ length: 7 }, (_, i) => this.spawnDebris(R, rnd, i / 7));
+  }
+
+  private spawnDebris(R: number, rnd: () => number, phase = rnd()): Debris {
+    return {
+      r: R * (0.75 + phase * 0.75),
+      a: rnd() * TAU,
+      size: 2.2 + rnd() * 5,
+      hue: [35, 190, 55][Math.floor(rnd() * 3)],
+      spin: (0.5 + rnd()) * (rnd() > 0.5 ? 1 : -1),
+      kind: Math.floor(rnd() * 3) as 0 | 1 | 2,
+    };
   }
 
   background(rc: RenderCtx): void {
@@ -98,8 +124,8 @@ class BlackHoleScene implements Scene {
     const cx = w / 2 + (Math.random() - 0.5) * jitter;
     const cy = h / 2 + (Math.random() - 0.5) * jitter;
 
-    const growth = Math.min(0.06, rc.level * 0.012);
-    const horizon = R * (0.15 + growth + progress * 0.14 + this.collapse * 0.35);
+    const L = look(rc.level);
+    const horizon = R * (0.13 * L.horizon + progress * 0.14 + this.collapse * 0.35);
 
     // disco de acreção
     ctx.save();
@@ -108,11 +134,11 @@ class BlackHoleScene implements Scene {
     ctx.scale(1, 0.34);
     const rings = 26;
     for (let i = rings; i > 0; i--) {
-      const rr = horizon * 1.15 + (i / rings) * R * 0.85;
+      const rr = horizon * 1.15 + (i / rings) * R * 0.85 * (0.85 + L.disk * 0.18);
       const heat = 1 - i / rings;
-      const alpha = (0.05 + heat * 0.20) * (0.75 + progress * 0.75) * rc.intensity;
-      ctx.strokeStyle = `hsla(${lerp(280, 390, heat)}, 95%, ${lerp(45, 72, heat)}%, ${alpha + this.flash * 0.3})`;
-      ctx.lineWidth = 2 + heat * 5;
+      const alpha = (0.05 + heat * 0.20) * (0.75 + progress * 0.75) * rc.intensity * (0.8 + L.disk * 0.25);
+      ctx.strokeStyle = `hsla(${lerp(L.cold, L.hot, heat)}, 95%, ${lerp(45, 72 + (L.disk - 1) * 12, heat)}%, ${alpha + this.flash * 0.3})`;
+      ctx.lineWidth = (2 + heat * 5) * (0.8 + L.disk * 0.3);
       ctx.beginPath(); ctx.arc(0, 0, rr, 0, TAU); ctx.stroke();
     }
     ctx.restore();
@@ -140,31 +166,124 @@ class BlackHoleScene implements Scene {
       ctx.stroke();
     }
 
-    // jatos relativísticos (nível alto)
-    if (rc.level >= 3) {
-      const jet = (0.2 + progress * 0.6) * rc.intensity;
+    // nível 4+: arcos de lente gravitacional acima e abaixo do disco
+    if (rc.level >= 4) {
       for (const dir of [-1, 1]) {
-        const g = ctx.createLinearGradient(cx, cy, cx, cy + dir * R * 1.1);
-        g.addColorStop(0, `rgba(180,220,255,${0.5 * jet})`);
-        g.addColorStop(1, 'rgba(120,80,255,0)');
+        ctx.strokeStyle = `rgba(${L.ring},${(0.16 + progress * 0.22) * rc.intensity})`;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + dir * horizon * 0.30, horizon * 1.9, horizon * 0.55, 0,
+          dir > 0 ? 0 : Math.PI, dir > 0 ? Math.PI : TAU);
+        ctx.stroke();
+      }
+    }
+
+    // jatos relativísticos (nível 3+), cegantes no estágio de quasar
+    if (rc.level >= 3) {
+      const quasar = rc.level >= 5;
+      const jet = (0.2 + progress * 0.6) * rc.intensity * (quasar ? 2.1 : 1);
+      for (const dir of [-1, 1]) {
+        const g = ctx.createLinearGradient(cx, cy, cx, cy + dir * R * (quasar ? 1.5 : 1.1));
+        g.addColorStop(0, `rgba(${quasar ? '235,250,255' : '180,220,255'},${0.5 * jet})`);
+        g.addColorStop(1, quasar ? 'rgba(120,220,255,0)' : 'rgba(120,80,255,0)');
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.moveTo(cx - horizon * 0.16, cy);
         ctx.lineTo(cx + horizon * 0.16, cy);
-        ctx.lineTo(cx + horizon * 0.7, cy + dir * R * 1.1);
-        ctx.lineTo(cx - horizon * 0.7, cy + dir * R * 1.1);
+        ctx.lineTo(cx + horizon * 0.7, cy + dir * R * (quasar ? 1.5 : 1.1));
+        ctx.lineTo(cx - horizon * 0.7, cy + dir * R * (quasar ? 1.5 : 1.1));
         ctx.closePath(); ctx.fill();
       }
+      if (quasar) {   // o quasar ilumina a cena inteira
+        const flare = ctx.createRadialGradient(cx, cy, horizon, cx, cy, R * 1.6);
+        flare.addColorStop(0, `rgba(150,230,255,${(0.10 + progress * 0.14) * rc.intensity})`);
+        flare.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = flare;
+        ctx.fillRect(0, 0, w, h);
+      }
+    }
+
+    // ---- corpos sendo devorados, esticados pela maré ----
+    for (const d of this.debris) {
+      const near = clamp(1 - (d.r - horizon) / (R * 1.1));
+      if (!rc.reduceMotion) {
+        d.a += (0.30 + near * 2.2) * rc.dt * (rc.running ? 1 : 0.3);
+        d.r -= (pullBase * (18 + near * 70) + 4) * rc.dt;
+      }
+      if (d.r <= horizon) {
+        this.eaten.push({ a: d.a, life: 1 });
+        Object.assign(d, this.spawnDebris(R, Math.random, 1));
+        continue;
+      }
+      const x = cx + Math.cos(d.a) * d.r;
+      const y = cy + Math.sin(d.a) * d.r * 0.34;
+
+      // quanto mais perto, mais o corpo vira um fio de matéria
+      const stretch = Math.pow(near, 1.6);
+      const arcLen = 0.05 + stretch * 1.5;
+      const light = 55 + near * 35;
+
+      ctx.strokeStyle = `hsla(${d.hue}, 95%, ${light}%, ${0.30 + near * 0.6})`;
+      ctx.lineWidth = d.size * (1 - stretch * 0.55);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, d.r, d.r * 0.34, 0, d.a - arcLen, d.a);
+      ctx.stroke();
+      ctx.lineCap = 'butt';
+
+      // cabeça ainda sólida do corpo
+      if (stretch < 0.85) {
+        const bodyR = d.size * (1 - stretch);
+        const bg = ctx.createRadialGradient(x, y, 0, x, y, bodyR * 2.4);
+        bg.addColorStop(0, `hsla(${d.hue}, 95%, 82%, ${0.9 - stretch * 0.5})`);
+        bg.addColorStop(0.35, `hsla(${d.hue}, 95%, 55%, ${0.55 - stretch * 0.4})`);
+        bg.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.arc(x, y, bodyR * 2.4, 0, TAU); ctx.fill();
+
+        if (d.kind === 1) {   // cometa: cauda apontando para fora
+          const g = ctx.createLinearGradient(x, y, cx + Math.cos(d.a) * (d.r + R * 0.3), cy + Math.sin(d.a) * (d.r + R * 0.3) * 0.34);
+          g.addColorStop(0, `hsla(${d.hue}, 95%, 75%, ${0.5 * rc.intensity})`);
+          g.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.strokeStyle = g;
+          ctx.lineWidth = d.size * 0.7;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(cx + Math.cos(d.a) * (d.r + R * 0.3), cy + Math.sin(d.a) * (d.r + R * 0.3) * 0.34);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // clarão de cada corpo cruzando o horizonte
+    for (const e of this.eaten) e.life -= rc.dt * 1.6;
+    this.eaten = this.eaten.filter((e) => e.life > 0);
+    for (const e of this.eaten) {
+      const ex = cx + Math.cos(e.a) * horizon * 1.05;
+      const ey = cy + Math.sin(e.a) * horizon * 1.05 * 0.34;
+      const g = ctx.createRadialGradient(ex, ey, 0, ex, ey, R * 0.22 * (1.2 - e.life));
+      g.addColorStop(0, `rgba(255,240,220,${e.life * 0.9})`);
+      g.addColorStop(0.4, `rgba(255,170,90,${e.life * 0.45})`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(ex, ey, R * 0.22 * (1.2 - e.life), 0, TAU); ctx.fill();
     }
 
     // anel de fótons
     const ringA = 0.55 + progress * 0.4 + this.flash;
-    ctx.strokeStyle = `rgba(255,210,150,${clamp(ringA, 0, 1)})`;
+    ctx.strokeStyle = `rgba(${L.ring},${clamp(ringA, 0, 1)})`;
     ctx.lineWidth = 2.5 + progress * 2;
     ctx.shadowBlur = 30 * rc.intensity;
-    ctx.shadowColor = '#ffb877';
+    ctx.shadowColor = `rgb(${L.ring})`;
     ctx.beginPath(); ctx.arc(cx, cy, horizon * 1.06, 0, TAU); ctx.stroke();
     ctx.shadowBlur = 0;
+
+    // nível 2+: anel de fótons secundário, mais fino e externo
+    if (rc.level >= 2) {
+      ctx.strokeStyle = `rgba(${L.ring},${clamp(ringA * 0.35, 0, 0.6)})`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(cx, cy, horizon * 1.22, 0, TAU); ctx.stroke();
+    }
 
     // horizonte de eventos
     ctx.fillStyle = '#000';
@@ -183,7 +302,7 @@ class BlackHoleScene implements Scene {
 
   event(e: SceneEvent): void {
     if (e === 'complete') { this.collapse = 1; this.flash = 1; this.shake = 1; }
-    if (e === 'reset') { this.ps.length = 0; }
+    if (e === 'reset') { this.ps.length = 0; this.debris.length = 0; this.eaten.length = 0; }
   }
 }
 
@@ -225,6 +344,38 @@ export const blackholeTheme: ThemeModule = {
     '--ui-transform': 'none',
   },
   createScene: () => new BlackHoleScene(),
+  // Sub grave com batimento: a gravidade "aperta" conforme o tempo passa.
+  ambience(k) {
+    const sub = k.drone({ freq: 36, type: 'sine', gain: 0.22 });
+    const beat = k.drone({ freq: 36.55, type: 'sine', gain: 0.16 });   // batimento lento contra o sub
+    const body = k.drone({ freq: 73, type: 'triangle', gain: 0.05, filter: { type: 'lowpass', freq: 260, q: 3 } });
+    const tension = k.drone({ freq: 110, type: 'sawtooth', gain: 0.0001, filter: { type: 'lowpass', freq: 200, q: 6 } });
+    const wind = k.bed({ gain: 0.05, type: 'lowpass', freq: 320, q: 0.8 });
+
+    k.lfo(wind.gainParam, 0.035, 0.022);
+    if (body.detune) k.lfo(body.detune, 0.07, 12);
+
+    // rangidos distantes de matéria sendo esticada
+    k.every(12, 26, (st) => {
+      if (!st.running) return;
+      audio.tone({ freq: 88 + Math.random() * 40, glideTo: 44, type: 'sine', dur: 3.4, gain: 0.05, attack: 0.6 });
+      audio.noise({ dur: 2.6, gain: 0.018, type: 'lowpass', freq: 700, sweepTo: 120 });
+    });
+
+    k.onState(({ running, progress, phase }) => {
+      const focus = phase === 'focus';
+      const pull = running && focus ? progress : 0;
+      sub.setGain(running ? 0.24 : 0.14);
+      beat.setGain(running ? 0.18 : 0.09);
+      beat.setFreq(36.55 + pull * 0.9);            // o batimento acelera junto com a queda
+      body.setGain(running ? 0.05 + pull * 0.05 : 0.025);
+      body.setFilter(260 + pull * 500);
+      tension.setGain(pull > 0.35 ? (pull - 0.35) * 0.055 : 0.0001);   // dissonância só no fim
+      wind.setGain(running ? 0.05 + pull * 0.06 : 0.028);
+      wind.setFilter(320 + pull * 700);
+    });
+  },
+
   sounds: {
     start() {
       audio.tone({ freq: 55, glideTo: 82, type: 'sine', dur: 2.4, gain: 0.2 });
@@ -249,18 +400,29 @@ export const blackholeTheme: ThemeModule = {
     ui() { audio.tone({ freq: 320, glideTo: 240, type: 'sine', dur: 0.09, gain: 0.06 }); },
     warn() { audio.tone({ freq: 60, glideTo: 45, type: 'sawtooth', dur: 0.8, gain: 0.14, filter: { type: 'lowpass', freq: 400 } }); },
   },
+  stageVars(level) {
+    const L = look(level);
+    return {
+      '--accent': L.accent,
+      '--accent-2': L.a2,
+      '--glow': `${L.accent}99`,
+      '--border-strong': `${L.a2}80`,
+    };
+  },
+  stageName: (level) => (STAGES[Math.min(STAGES.length, Math.max(1, level)) - 1] ?? STAGES[0]).name,
   progression: {
     unit: 'M☉',
     tiers: STAGES,
     gain: (minutes, phase) => (phase === 'focus' ? minutes * 2 : 0),
-    view(p) {
+    view(p, level) {
+      const worn = STAGES[Math.min(STAGES.length, Math.max(1, level)) - 1] ?? STAGES[0];
       const c = cur(p.counter), n = nxt(p.counter);
       const span = Math.max(1, n.at - c.at);
       const pct = n.at > p.counter ? clamp((p.counter - c.at) / span) * 100 : 100;
       return {
-        title: c.name,
+        title: worn.name,
         headline: `${fmtMass(p.counter)} M☉`,
-        sub: `massa acumulada · nível ${p.level}`,
+        sub: `massa acumulada · estágio ${level} de ${STAGES.length}`,
         barPct: pct,
         barLabel: n.at > p.counter ? `${fmtMass(n.at - p.counter)} M☉ até ${n.name}` : 'Singularidade máxima',
         stats: [
@@ -280,6 +442,6 @@ export const blackholeTheme: ThemeModule = {
   labels: {
     focus: 'Acreção', short: 'Deriva', long: 'Horizonte Frio',
     start: 'Iniciar colapso', pause: 'Suspender', resume: 'Retomar colapso',
-    reset: 'Reiniciar', skip: 'Pular fase', notes: 'Notas do observador', log: 'Telemetria',
+    reset: 'Reiniciar', notes: 'Notas do observador', log: 'Telemetria',
   },
 };

@@ -27,20 +27,68 @@ interface NoiseOpts {
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  /** barramento separado para a camada de ambiente contínua */
+  private ambient: GainNode | null = null;
   private noiseBuf: AudioBuffer | null = null;
 
   private ensure(): AudioContext | null {
     if (!store.state.settings.soundOn) return null;
+    return this.boot();
+  }
+
+  /** Cria o contexto independentemente do estado de `soundOn` (o volume é que zera). */
+  private boot(): AudioContext | null {
     if (!this.ctx) {
       const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!Ctor) return null;
       this.ctx = new Ctor();
       this.master = this.ctx.createGain();
       this.master.connect(this.ctx.destination);
+      this.ambient = this.ctx.createGain();
+      this.ambient.gain.value = 0;
+      // compressor no barramento de ambiente: várias camadas contínuas somadas
+      // não podem estourar nem brigar com os efeitos pontuais
+      const comp = this.ctx.createDynamicsCompressor();
+      comp.threshold.value = -24;
+      comp.knee.value = 20;
+      comp.ratio.value = 6;
+      comp.attack.value = 0.05;
+      comp.release.value = 0.4;
+      this.ambient.connect(comp);
+      comp.connect(this.ctx.destination);
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
-    if (this.master) this.master.gain.value = store.state.settings.volume * 0.6;
+    this.applyVolumes();
     return this.ctx;
+  }
+
+  /** Reaplica os volumes de efeitos e ambiente a partir das configurações. */
+  applyVolumes(): void {
+    const s = store.state.settings;
+    if (this.master) this.master.gain.value = s.soundOn ? s.volume * 0.6 : 0;
+    if (this.ambient && this.ctx) {
+      const target = s.soundOn && s.ambience ? s.volume * s.ambienceVolume * 0.5 : 0;
+      this.ambient.gain.setTargetAtTime(target, this.ctx.currentTime, 0.25);
+    }
+  }
+
+  /** Contexto e destino do ambiente — usados pelo AmbienceManager. */
+  ambientBus(): { ctx: AudioContext; out: GainNode } | null {
+    const ctx = this.boot();
+    if (!ctx || !this.ambient) return null;
+    return { ctx, out: this.ambient };
+  }
+
+  /** Buffer de ruído branco reaproveitado por efeitos e ambiente. */
+  noiseBuffer(ctx: AudioContext): AudioBuffer {
+    if (!this.noiseBuf) {
+      const len = ctx.sampleRate * 2;
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      this.noiseBuf = buf;
+    }
+    return this.noiseBuf;
   }
 
   /** Chamar num gesto do usuário para destravar o áudio no navegador. */
@@ -90,13 +138,7 @@ export class AudioEngine {
   noise(o: NoiseOpts = {}): void {
     const ctx = this.ensure();
     if (!ctx || !this.master) return;
-    if (!this.noiseBuf) {
-      const len = ctx.sampleRate * 2;
-      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-      this.noiseBuf = buf;
-    }
+    this.noiseBuffer(ctx);
     const t0 = ctx.currentTime + (o.delay ?? 0);
     const dur = o.dur ?? 0.3;
     const src = ctx.createBufferSource();

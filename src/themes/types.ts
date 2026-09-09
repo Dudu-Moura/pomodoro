@@ -1,4 +1,5 @@
 import type { Phase, ThemeFamily, ThemeId, ThemeProgress } from '../core/types';
+import type { AmbienceSpec } from '../core/ambience';
 
 export interface RenderCtx {
   ctx: CanvasRenderingContext2D;
@@ -17,7 +18,7 @@ export interface RenderCtx {
   overload: number;     // 0..1 nos 10% finais da fase
 }
 
-export type SceneEvent = 'start' | 'pause' | 'resume' | 'reset' | 'complete' | 'skip' | 'tick' | 'levelup';
+export type SceneEvent = 'start' | 'pause' | 'resume' | 'reset' | 'complete' | 'tick' | 'levelup';
 
 export interface Scene {
   background(rc: RenderCtx): void;
@@ -54,7 +55,8 @@ export interface Progression {
   tiers: Tier[];
   /** ganho de `counter` por minuto de foco */
   gain(minutes: number, phase: Phase): number;
-  view(p: ThemeProgress): ProgressionView;
+  /** `level` é o estágio em uso (pode ser um antigo, escolhido à mão) */
+  view(p: ThemeProgress, level: number): ProgressionView;
   /** mensagem exibida no log ao concluir um foco */
   completionMessage(p: ThemeProgress, minutes: number): string;
 }
@@ -76,6 +78,15 @@ export interface ThemeModule {
     ui(): void;
     warn(): void;
   };
+  /** paisagem sonora contínua do tema (idle e em execução) */
+  ambience: AmbienceSpec;
+  /**
+   * Sobrescritas de estilo por estágio de progressão: cada nível desbloqueado
+   * repinta a interface (acento, brilho, e fonte quando faz sentido).
+   */
+  stageVars(level: number): Record<string, string>;
+  /** Nome curto do estágio, usado no anúncio de evolução. */
+  stageName(level: number): string;
   progression: Progression;
   /** rótulos de UI específicos do tema */
   labels: {
@@ -86,7 +97,6 @@ export interface ThemeModule {
     pause: string;
     resume: string;
     reset: string;
-    skip: string;
     notes: string;
     log: string;
   };

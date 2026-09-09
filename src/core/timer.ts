@@ -8,7 +8,6 @@ export type TimerEvent =
   | { type: 'reset'; phase: Phase }
   | { type: 'tick'; remaining: number }
   | { type: 'complete'; phase: Phase; minutes: number }
-  | { type: 'skip'; phase: Phase }
   | { type: 'phase'; phase: Phase };
 
 type Handler = (e: TimerEvent) => void;
@@ -92,13 +91,6 @@ export class PomodoroTimer {
     this.remaining = this.total;
     this.lastWholeSecond = -1;
     this.fire({ type: 'reset', phase: this.phase });
-  }
-
-  /** troca de fase sem contar como conclusão */
-  skip(): void {
-    const from = this.phase;
-    this.fire({ type: 'skip', phase: from });
-    this.advance(false);
   }
 
   setPhase(phase: Phase): void {

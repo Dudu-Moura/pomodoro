@@ -3,7 +3,9 @@ import { store } from './core/store';
 import { saveRemote } from './core/sync';
 import { timer } from './core/timer';
 import { audio } from './core/audio';
+import { ambience } from './core/ambience';
 import { applySession } from './core/gamification';
+import { pushToPhone } from './core/push';
 import { getTheme, themeList } from './themes';
 import { Renderer } from './ui/renderer';
 import { toast } from './ui/toasts';
@@ -27,6 +29,7 @@ function applyTheme(id: ThemeId, announce = false): void {
   store.setSettings({ theme: id });
   document.documentElement.dataset.theme = id;
   for (const [k, v] of Object.entries(theme.vars)) document.documentElement.style.setProperty(k, v);
+  applyStageVars();
 
   $('brand-mark').textContent = MARKS[id];
   $('brand-tag').textContent = theme.name;
@@ -36,6 +39,8 @@ function applyTheme(id: ThemeId, announce = false): void {
   (document.querySelector('.tab[data-tab="log"]') as HTMLElement).textContent = theme.labels.log;
 
   renderer.setTheme(id);
+  ambience.build(id, theme.ambience);
+  ambience.update(timer.running, timer.progress, timer.phase);
   buildThemeSwitch();
   buildPhaseTabs();
   updateControls();
@@ -50,6 +55,26 @@ function applyTheme(id: ThemeId, announce = false): void {
     store.log(`tema alterado para ${theme.name}`);
     renderLog();
   }
+}
+
+/** Repinta a UI conforme o estágio desbloqueado no tema atual. */
+function applyStageVars(): void {
+  const theme = getTheme(store.theme);
+  const vars = theme.stageVars(store.activeLevel());
+  for (const [k, v] of Object.entries(vars)) document.documentElement.style.setProperty(k, v);
+}
+
+/** Anúncio de evolução: a tela inteira reage à mudança de estágio. */
+function celebrateStage(name: string): void {
+  applyStageVars();
+  const el = document.createElement('div');
+  el.className = 'stage-up';
+  el.innerHTML = `<div class="stage-up-inner"><span class="stage-up-kicker">novo estágio</span><strong></strong></div>`;
+  (el.querySelector('strong') as HTMLElement).textContent = name;
+  document.body.appendChild(el);
+  window.setTimeout(() => el.classList.add('out'), 2600);
+  window.setTimeout(() => el.remove(), 3400);
+  renderer.event('levelup');
 }
 
 function buildThemeSwitch(): void {
@@ -119,6 +144,7 @@ function updateReadout(): void {
 
   const card = document.querySelector('.timer-card') as HTMLElement;
   card.classList.toggle('overload', timer.progress > 0.9 && timer.running);
+  (document.querySelector('.readout') as HTMLElement).classList.toggle('zen', store.state.settings.hideTime);
 
   const dots = $('cycle-dots');
   if (dots.children.length !== every) {
@@ -134,7 +160,6 @@ function updateControls(): void {
     ? theme.labels.pause
     : timer.progress > 0 ? theme.labels.resume : theme.labels.start;
   $('btn-reset').textContent = theme.labels.reset;
-  $('btn-skip').textContent = theme.labels.skip;
   Array.from($('phase-tabs').children).forEach((el, i) => {
     el.classList.toggle('active', (['focus', 'short', 'long'] as Phase[])[i] === timer.phase);
   });
@@ -206,12 +231,6 @@ timer.on((e) => {
       renderer.event('reset');
       break;
 
-    case 'skip':
-      closeSession(false);
-      renderer.event('skip');
-      theme.sounds.ui();
-      break;
-
     case 'tick': {
       updateReadout();
       const st = store.state.settings;
@@ -237,16 +256,25 @@ timer.on((e) => {
         store.log(out.message, 'reward');
         toast(MARKS[store.theme], `Sessão concluída · ${theme.labels.focus}`, out.message, 6000);
         notify('Sessão concluída', out.message);
+        void pushToPhone(
+          `Foco concluído — ${minutes.toFixed(0)} min`,
+          `${sessionTask || 'sem tarefa definida'}\n${out.message}`,
+        ).then((r) => {
+          if (!r.ok && r.error !== 'desligado') store.log(`falha ao avisar o celular: ${r.error}`, 'system');
+        });
       } else {
         store.log(`pausa concluída — a seguir: ${theme.labels.focus}`);
         notify('Pausa concluída', `Hora de retomar: ${theme.labels.focus}.`);
       }
 
       if (out.levelUp) {
+        const up = out.levelUp;
+        store.state.progress[store.theme].stagePick = 0;   // mostra a novidade
         window.setTimeout(() => {
           theme.sounds.levelup();
-          toast('★', `Novo estágio: ${out.levelUp?.name}`, out.levelUp?.desc ?? '', 8000);
-          store.log(`nível ${out.levelUp?.to} alcançado: ${out.levelUp?.name}`, 'reward');
+          celebrateStage(up.name);
+          toast('★', `Novo estágio: ${up.name}`, up.desc, 8000);
+          store.log(`nível ${up.to} alcançado: ${up.name} — visual e efeitos atualizados`, 'reward');
           renderLog();
         }, 900);
       }
@@ -274,6 +302,7 @@ timer.on((e) => {
       break;
   }
 
+  ambience.update(timer.running, timer.progress, timer.phase);
   updateControls();
   updateReadout();
 });
@@ -288,14 +317,33 @@ $('btn-reset').addEventListener('click', () => {
   timer.reset();
   getTheme(store.theme).sounds.ui();
 });
-$('btn-skip').addEventListener('click', () => { audio.unlock(); timer.skip(); });
 
 $('btn-sound').addEventListener('click', () => {
   const on = !store.state.settings.soundOn;
   store.setSettings({ soundOn: on });
+  audio.applyVolumes();
   if (on) { audio.unlock(); getTheme(store.theme).sounds.ui(); }
   renderTop();
 });
+
+// qualquer mudança de volume/ambiente nas configurações reflete na hora
+let volSig = '';
+store.subscribe((st) => {
+  const sig = `${st.settings.soundOn}|${st.settings.volume}|${st.settings.ambience}|${st.settings.ambienceVolume}`;
+  if (sig === volSig) return;
+  volSig = sig;
+  audio.applyVolumes();
+});
+
+// o navegador só libera áudio depois de um gesto: o primeiro serve para tudo
+const firstGesture = (): void => {
+  audio.unlock();
+  audio.applyVolumes();
+  window.removeEventListener('pointerdown', firstGesture);
+  window.removeEventListener('keydown', firstGesture);
+};
+window.addEventListener('pointerdown', firstGesture);
+window.addEventListener('keydown', firstGesture);
 
 ($('task-input') as HTMLInputElement).addEventListener('input', (ev) => {
   store.state.task = (ev.target as HTMLInputElement).value;
@@ -338,6 +386,23 @@ $('btn-log-add').addEventListener('click', addLog);
 logInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addLog(); });
 
 /* ---------------- abas ---------------- */
+
+// escolher manualmente um estágio já desbloqueado
+$('pane-collection').addEventListener('click', (e) => {
+  const btn = (e.target as HTMLElement).closest('[data-stage]') as HTMLElement | null;
+  if (!btn) return;
+  const level = Number(btn.dataset.stage);
+  store.pickStage(level);
+  applyStageVars();
+  renderCollection();
+  renderProgress();
+  const theme = getTheme(store.theme);
+  theme.sounds.ui();
+  const active = store.activeLevel();
+  toast(theme.progression.tiers[active - 1]?.icon ?? '★',
+    level === 0 ? 'Estágio automático' : `Estágio: ${theme.stageName(active)}`,
+    level === 0 ? 'Sempre o mais recente desbloqueado.' : 'Visual, efeitos e cores aplicados.', 3600);
+});
 
 $('tabbar').addEventListener('click', (e) => {
   const btn = (e.target as HTMLElement).closest('.tab') as HTMLElement | null;
@@ -387,6 +452,19 @@ importFile.addEventListener('change', async () => {
   }
 });
 
+$('btn-reset-progress').addEventListener('click', async () => {
+  if (!confirm(
+    'Zerar a progressão de TODOS os temas: níveis, estágios, coleções, sequência de dias e marcas de foco.\n\n'
+    + 'Suas anotações, o registro e as configurações são preservados.\n\nContinuar?')) return;
+  store.resetProgress();
+  await saveRemote(store.state);
+  store.log('progressão reiniciada a pedido', 'system');
+  applyStageVars();
+  renderAll();
+  getTheme(store.theme).sounds.ui();
+  toast('↺', 'Progresso reiniciado', 'Todos os temas voltaram ao primeiro estágio.', 5000);
+});
+
 $('btn-wipe').addEventListener('click', async () => {
   if (!confirm('Isso apaga histórico, progresso, conquistas e anotações — inclusive o arquivo em disco. Não dá para desfazer. Continuar?')) return;
   store.reset();
@@ -405,9 +483,16 @@ document.addEventListener('keydown', (e) => {
   switch (e.key.toLowerCase()) {
     case ' ': e.preventDefault(); audio.unlock(); timer.toggle(); break;
     case 'r': $('btn-reset').click(); break;
-    case 's': timer.skip(); break;
     case 'n': e.preventDefault(); notes.focus(); break;
     case 'm': $('btn-sound').click(); break;
+    case 'h': {
+      const hide = !store.state.settings.hideTime;
+      store.setSettings({ hideTime: hide });
+      updateReadout();
+      getTheme(store.theme).sounds.ui();
+      toast(hide ? '◌' : '◉', hide ? 'Modo zen' : 'Relógio visível', hide ? 'Só a arte do tema. H para voltar.' : '', 2600);
+      break;
+    }
     case ',': e.preventDefault(); openSettings(); break;
     case '1': case '2': case '3': case '4': {
       const t = themeList[Number(e.key) - 1];

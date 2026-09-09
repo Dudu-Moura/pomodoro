@@ -51,8 +51,8 @@ export interface SessionOutcome {
 
 const unlockedIds = (themeId: ThemeId, counter: number): string[] => {
   const t = getTheme(themeId);
-  const fake = { xp: 0, level: 1, totalMinutes: 0, sessions: 0, unlocked: [], counter };
-  return t.progression.view(fake).collection.filter((c) => c.unlocked).map((c) => c.id);
+  const fake = { xp: 0, level: 1, totalMinutes: 0, sessions: 0, unlocked: [], counter, stagePick: 0 };
+  return t.progression.view(fake, 1).collection.filter((c) => c.unlocked).map((c) => c.id);
 };
 
 const levelFor = (themeId: ThemeId, counter: number): number =>
@@ -86,7 +86,7 @@ export function applySession(phase: Phase, minutes: number, completed: boolean):
 
   const after = unlockedIds(themeId, p.counter);
   const newIds = after.filter((id) => !before.unlocked.includes(id));
-  const view = theme.progression.view(p);
+  const view = theme.progression.view(p, p.level);
   const unlocks = view.collection.filter((c) => newIds.includes(c.id)).map((c) => ({ name: c.name, icon: c.icon, desc: c.desc }));
   p.unlocked = Array.from(new Set([...p.unlocked, ...after]));
 
